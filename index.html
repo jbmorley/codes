@@ -21,8 +21,9 @@
     let timerInterval;
 
     function startGeneration() {
+        if (timerInterval) clearInterval(timerInterval);
         generateCode();
-        restartInterval();
+        timerInterval = setInterval(generateCode, 30000); // Regenerate code every 30 seconds
     }
 
     function generateCode() {
@@ -30,13 +31,6 @@
         const code = otplib.authenticator.generate(secret);
         document.getElementById('code').innerText = code;
         startTimer();
-    }
-
-    function restartInterval() {
-        if (timerInterval) clearInterval(timerInterval);
-        timerInterval = setInterval(() => {
-            generateCode();
-        }, 30000); // Regenerate code every 30 seconds
     }
 
     function startTimer() {
@@ -48,7 +42,7 @@
             document.getElementById('timer').innerText = timeLeft;
             if (timeLeft <= 0) {
                 clearInterval(timerInterval);
-                restartInterval(); // Restart the code generation interval when the timer expires
+                generateCode(); // Generate new code immediately when timer expires
             }
         }, 1000); // Update countdown every second
     }
