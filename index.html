@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codes: 2FA Code Generator</title>
+    <script src="https://unpkg.com/@otplib/preset-browser@^12.0.0/buffer.js"></script>
+    <script src="https://unpkg.com/@otplib/preset-browser@^12.0.0/index.js"></script>
+</head>
+<body>
+
+<h2>Codes: 2FA Code Generator</h2>
+<label for="secret">Enter your secret:</label>
+<input type="text" id="secret" name="secret">
+<button onclick="startGeneration()">Generate Code</button>
+<p>Generated Code: <span id="code"></span></p>
+<button onclick="copyToClipboard()">Copy to Clipboard</button>
+<p>Time Remaining: <span id="timer"></span>s</p>
+
+<script>
+    let timerInterval;
+
+    function startGeneration() {
+        generateCode();
+        restartInterval();
+    }
+
+    function generateCode() {
+        const secret = document.getElementById('secret').value;
+        const code = otplib.authenticator.generate(secret);
+        document.getElementById('code').innerText = code;
+        startTimer();
+    }
+
+    function restartInterval() {
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            generateCode();
+        }, 30000); // Regenerate code every 30 seconds
+    }
+
+    function startTimer() {
+        let timeLeft = 30 - Math.floor(Date.now() / 1000) % 30; // Calculate remaining time in the current 30s window
+        document.getElementById('timer').innerText = timeLeft;
+        if (timerInterval) clearInterval(timerInterval); // Clear existing interval to reset the timer
+        timerInterval = setInterval(() => {
+            timeLeft -= 1;
+            document.getElementById('timer').innerText = timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                restartInterval(); // Restart the code generation interval when the timer expires
+            }
+        }, 1000); // Update countdown every second
+    }
+
+    function copyToClipboard() {
+        const code = document.getElementById('code').innerText;
+        navigator.clipboard.writeText(code).then(() => {
+            alert('Code copied to clipboard!');
+        }, (err) => {
+            console.error('Error in copying text: ', err);
+        });
+    }
+</script>
+
+</body>
+</html>
